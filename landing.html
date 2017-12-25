@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ToDo List</title>
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <style>
+        button{
+            padding:0;
+        }
+    </style>
+</head>
+<body>
+<h1>ToDo List</h1>
+<h2>Insert New Task</h2>
+<textarea name="task"cols="10" rows="4" id="ta"></textarea>
+<button id="sub">Submit</button>
+<ul id="wow">
+</ul>
+
+<script>
+    const u=$("#wow");
+    const ta=$("#ta");
+    $.ajax({
+        url: "/show",
+        type: "GET",
+        success: (data)=>{
+            getsuccess(data);
+        }
+    })
+    // $.get("/show", (data)=>{
+    //     u.html('');
+    //     data.forEach((task)=>{
+    //         app(u,task);
+    //     })
+    // });
+    $("#sub").click(()=>{
+        // $.post("/add", {
+        //     text: ta.val()
+        // }, (data)=>{
+        //     app(u,data)
+        //     ta.val('');
+        // })
+        $.ajax({
+            url: "/add",
+            type: "POST",
+            data: {text: ta.val()},
+            success:  (data)=>{
+                    app(u,data)
+                    ta.val('');
+                }
+        })
+    })
+
+    function getsuccess(data) {
+        u.html('');
+        data.forEach((task) =>{
+            app(u, task);
+        })
+        $(".edit-btn").click((event) => {
+            let target = $(event.target);
+            target.siblings(":last").toggle()
+        })
+        $(".dlt-btn").click((event) => {
+
+        })
+        $(".editted-btn").click((event) => {
+            let target = $(event.target);
+            let targetTa=$(target.siblings()[0]);
+            let newval=targetTa.val();
+            let comm_id=targetTa.data("id");
+            $.ajax({
+                url: "/edit",
+                type: "PUT",
+                data: {text: newval, comm_id},
+                success:  (data)=>{
+                    $($(targetTa.parent()).siblings()[0]).text(data.text);
+                }
+            })
+        })
+    }
+    function app(u,task){
+        // language=HTML
+        u.append(`
+            <li>
+                <p>${task.text}</p>
+                <a class="edit-btn">Edit</a>
+            <a class="dlt-btn">Delete</a>
+            <div style="display:none">
+            <textarea cols="10" rows="1"  data-id=${task._id}>${task.text}</textarea>
+            <a class="editted-btn">Submit</a>
+            </div>
+            </li>
+            `);
+        // anchor tags must not have hrefs, and edit div is initially hidden
+    }
+</script>
+</body>
+</html>
